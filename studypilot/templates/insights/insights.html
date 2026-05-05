@@ -5,119 +5,219 @@
 {% block content %}
   <h1 class="h3 mb-4">Insights</h1>
 
-  {% if summary.count == 0 %}
-    <div class="card shadow-sm">
-      <div class="card-body text-center text-muted py-5">
-        <p class="mb-0">
-          Complete a few tasks with logged sessions to see prediction
-          accuracy here.
-        </p>
+  <div class="row g-3 mb-4">
+    <div class="col-md-3 col-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <p class="text-muted small mb-1 text-uppercase">Current streak</p>
+          <p class="h3 mb-0">
+            {{ streak }}
+            <span class="fs-6 text-muted">
+              day{{ '' if streak == 1 else 's' }}
+            </span>
+          </p>
+        </div>
       </div>
     </div>
-  {% else %}
-    <div class="row g-3 mb-4">
-      <div class="col-md-3 col-6">
-        <div class="card shadow-sm h-100">
-          <div class="card-body">
-            <p class="text-muted small mb-1 text-uppercase">Scored tasks</p>
-            <p class="h3 mb-0">{{ summary.count }}</p>
-          </div>
+    <div class="col-md-3 col-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <p class="text-muted small mb-1 text-uppercase">Best study day</p>
+          {% if best_weekday %}
+            <p class="h5 mb-0">{{ best_weekday.label }}</p>
+            <p class="small text-muted mb-0">
+              {{ best_weekday.hours }} h total
+            </p>
+          {% else %}
+            <p class="text-muted fst-italic mb-0 small">No sessions yet.</p>
+          {% endif %}
         </div>
       </div>
-      <div class="col-md-3 col-6">
-        <div class="card shadow-sm h-100">
-          <div class="card-body">
-            <p class="text-muted small mb-1 text-uppercase">Mean abs error</p>
-            <p class="h3 mb-0">{{ summary.mae }} <span class="fs-6 text-muted">min</span></p>
-          </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <p class="text-muted small mb-1 text-uppercase">Mean abs error</p>
+          <p class="h3 mb-0">
+            {% if summary.count %}
+              {{ summary.mae }}
+              <span class="fs-6 text-muted">min</span>
+            {% else %}
+              <span class="fs-6 text-muted fst-italic">no data</span>
+            {% endif %}
+          </p>
         </div>
       </div>
-      <div class="col-md-3 col-6">
-        <div class="card shadow-sm h-100">
-          <div class="card-body">
-            <p class="text-muted small mb-1 text-uppercase">Bias (actual − predicted)</p>
-            <p class="h3 mb-0
-                      {% if summary.bias > 0 %}text-danger{% elif summary.bias < 0 %}text-success{% endif %}">
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <p class="text-muted small mb-1 text-uppercase">Bias (actual − predicted)</p>
+          <p class="h3 mb-0
+                    {% if summary.bias > 0 %}text-danger{% elif summary.bias < 0 %}text-success{% endif %}">
+            {% if summary.count %}
               {{ '+' if summary.bias > 0 else '' }}{{ summary.bias }}
               <span class="fs-6 text-muted">min</span>
-            </p>
-          </div>
+            {% else %}
+              <span class="fs-6 text-muted fst-italic">no data</span>
+            {% endif %}
+          </p>
         </div>
       </div>
-      <div class="col-md-3 col-6">
-        <div class="card shadow-sm h-100">
-          <div class="card-body">
-            <p class="text-muted small mb-1 text-uppercase">By model</p>
-            <p class="mb-0 small">
-              {% for version, n in summary.by_version.items() %}
-                <span class="badge bg-light text-dark border me-1 mb-1">
-                  {{ version }} · {{ n }}
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-7">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <h2 class="h6 text-uppercase text-muted mb-3">
+            Predicted vs actual (minutes)
+          </h2>
+          {% if summary.count %}
+            <p class="text-muted small mb-3">
+              Each dot is one completed task. The diagonal is "predicted = actual";
+              dots above mean we under-predicted, dots below mean we over-predicted.
+            </p>
+            <canvas id="scatterChart" height="280"></canvas>
+            <p class="small text-muted mt-2 mb-0">
+              By model:
+              {% for v, n in summary.by_version.items() %}
+                <span class="badge bg-light text-dark border me-1">
+                  {{ v }} · {{ n }}
                 </span>
               {% endfor %}
             </p>
-          </div>
+          {% else %}
+            <p class="text-muted fst-italic mb-0">
+              Complete a few tasks with logged sessions to populate this chart.
+            </p>
+          {% endif %}
         </div>
       </div>
     </div>
-
-    <div class="card shadow-sm">
-      <div class="card-body">
-        <h2 class="h6 text-uppercase text-muted mb-3">
-          Predicted vs actual (minutes)
-        </h2>
-        <p class="text-muted small mb-3">
-          Each dot is one completed task. The diagonal is "predicted = actual";
-          dots above mean we under-predicted, dots below mean we over-predicted.
-        </p>
-        <canvas id="scatterChart" height="280"></canvas>
+    <div class="col-md-5">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <h2 class="h6 text-uppercase text-muted mb-3">
+            Estimation drift
+          </h2>
+          {% if accuracy_series %}
+            <p class="text-muted small mb-3">
+              How far off (in minutes) each prediction was, in order. Closer
+              to zero is better.
+            </p>
+            <canvas id="driftChart" height="280"></canvas>
+          {% else %}
+            <p class="text-muted fst-italic mb-0">
+              Needs scored tasks.
+            </p>
+          {% endif %}
+        </div>
       </div>
     </div>
+  </div>
 
-    {# Day 11 will add: accuracy-over-time line, per-subject averages,
-       best study day card, streak, MAPE breakdown by model_version. #}
-  {% endif %}
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h2 class="h6 text-uppercase text-muted mb-3">
+        Time spent by subject
+      </h2>
+      {% if by_subject %}
+        <div class="table-responsive">
+          <table class="table mb-0 align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Subject</th>
+                <th class="text-end">Done tasks</th>
+                <th class="text-end">Avg per task</th>
+                <th class="text-end">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in by_subject %}
+                <tr>
+                  <td>
+                    <span class="d-inline-block rounded-circle me-1"
+                          style="width:10px; height:10px;
+                                 background-color:{{ row.color }};"></span>
+                    {{ row.name }}
+                  </td>
+                  <td class="text-end">{{ row.task_count }}</td>
+                  <td class="text-end">{{ row.avg_minutes }} min</td>
+                  <td class="text-end">
+                    {{ (row.total_minutes / 60) | round(1) }} h
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p class="text-muted fst-italic mb-0">
+          Complete tasks with logged sessions to see your subject breakdown.
+        </p>
+      {% endif %}
+    </div>
+  </div>
 {% endblock %}
 
 {% block scripts %}
-  {% if summary.count > 0 %}
+  {% if summary.count or accuracy_series %}
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
     <script>
       const points  = {{ scatter_points | tojson }};
       const maxAxis = {{ max_axis | tojson }};
-      // Diagonal reference y = x as a line dataset.
-      const diagonal = [{x: 0, y: 0}, {x: maxAxis, y: maxAxis}];
+      const drift   = {{ accuracy_series | tojson }};
 
-      new Chart(document.getElementById('scatterChart'), {
-        data: {
-          datasets: [
-            {
-              type: 'scatter',
-              label: 'Tasks',
-              data: points,
-              backgroundColor: '#3366ff',
-            },
-            {
-              type: 'line',
-              label: 'predicted = actual',
-              data: diagonal,
-              borderColor: 'rgba(0,0,0,0.25)',
-              borderDash: [4, 4],
-              pointRadius: 0,
-              fill: false,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          scales: {
-            x: { title: { display: true, text: 'Predicted (min)' },
-                 beginAtZero: true },
-            y: { title: { display: true, text: 'Actual (min)' },
-                 beginAtZero: true },
+      if (points.length) {
+        const diagonal = [{x: 0, y: 0}, {x: maxAxis, y: maxAxis}];
+        new Chart(document.getElementById('scatterChart'), {
+          data: {
+            datasets: [
+              { type: 'scatter', label: 'Tasks', data: points,
+                backgroundColor: '#3366ff' },
+              { type: 'line', label: 'predicted = actual', data: diagonal,
+                borderColor: 'rgba(0,0,0,0.25)', borderDash: [4,4],
+                pointRadius: 0, fill: false },
+            ],
           },
-          plugins: { legend: { position: 'bottom' } },
-        },
-      });
+          options: {
+            responsive: true,
+            scales: {
+              x: { title: { display: true, text: 'Predicted (min)' },
+                   beginAtZero: true },
+              y: { title: { display: true, text: 'Actual (min)' },
+                   beginAtZero: true },
+            },
+            plugins: { legend: { position: 'bottom' } },
+          },
+        });
+      }
+
+      if (drift.length) {
+        new Chart(document.getElementById('driftChart'), {
+          type: 'line',
+          data: {
+            labels: drift.map(d => d.x),
+            datasets: [{
+              label: 'Delta (actual − predicted)',
+              data: drift.map(d => d.y),
+              borderColor: '#3366ff',
+              backgroundColor: 'rgba(51,102,255,0.1)',
+              tension: 0.2,
+              fill: true,
+            }],
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: { title: { display: true, text: 'Minutes off' } },
+            },
+            plugins: { legend: { display: false } },
+          },
+        });
+      }
     </script>
   {% endif %}
 {% endblock %}
