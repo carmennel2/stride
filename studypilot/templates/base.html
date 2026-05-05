@@ -40,6 +40,13 @@
                  the listing, "subjects.new_subject" matches the form. #}
               <li class="nav-item">
                 <a class="nav-link
+                          {% if request.endpoint and request.endpoint.startswith('dashboard.') %}active fw-semibold{% endif %}"
+                   href="{{ url_for('dashboard.dashboard') }}">
+                  Dashboard
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link
                           {% if request.endpoint and request.endpoint.startswith('tasks.') %}active fw-semibold{% endif %}"
                    href="{{ url_for('tasks.list_tasks') }}">
                   Tasks
