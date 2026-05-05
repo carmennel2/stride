@@ -1,10 +1,10 @@
 """Database models.
 
-Each ORM class maps to one normalized table. Day 2 introduces only the
-User model; subjects, task types, tasks, sessions, and predictions are
-added on Days 3-5 as the schema grows.
+Each ORM class maps to one normalized table. The schema grows over Days
+2-5: User (Day 2), Subject + TaskType (Day 3), Task + Prediction (Day 4),
+StudySession (Day 5).
 """
-from datetime import datetime
+from datetime import date, datetime
 
 from flask_login import UserMixin
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -105,6 +105,98 @@ DEFAULT_TASK_TYPES: tuple[str, ...] = (
     "Revision",
     "Other",
 )
+
+
+# Task statuses live in code rather than a lookup table — they're small,
+# stable, and we want to validate against them in forms without a join.
+TASK_STATUSES: tuple[str, ...] = ("pending", "in_progress", "done")
+
+
+class Task(db.Model):
+    """A piece of study work the user wants to track.
+
+    target_words and target_pages are nullable on purpose — Reading uses
+    pages, Essay uses words, the other types use neither. The predictor
+    feature builder treats missing values as zero.
+    """
+
+    __tablename__ = "tasks"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False, index=True,
+    )
+    subject_id = db.Column(
+        db.Integer, db.ForeignKey("subjects.id"), nullable=False, index=True
+    )
+    type_id = db.Column(
+        db.Integer, db.ForeignKey("task_types.id"), nullable=False
+    )
+    title = db.Column(db.String(120), nullable=False)
+    description = db.Column(db.Text, nullable=False, default="")
+    complexity = db.Column(db.Integer, nullable=False, default=3)
+    target_words = db.Column(db.Integer, nullable=True)
+    target_pages = db.Column(db.Integer, nullable=True)
+    # predicted_minutes is set on create by the predictor; never null.
+    predicted_minutes = db.Column(db.Integer, nullable=False, default=0)
+    due_date = db.Column(db.Date, nullable=False, default=date.today)
+    status = db.Column(db.String(20), nullable=False, default="pending")
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    completed_at = db.Column(db.DateTime, nullable=True)
+
+    user = db.relationship(
+        "User",
+        backref=db.backref("tasks", lazy="dynamic", cascade="all, delete-orphan"),
+    )
+    subject = db.relationship("Subject", backref=db.backref("tasks", lazy="dynamic"))
+    task_type = db.relationship("TaskType")
+
+    @property
+    def is_done(self) -> bool:
+        return self.status == "done"
+
+    def __repr__(self) -> str:
+        return f"<Task {self.id} {self.title!r} status={self.status}>"
+
+
+class Prediction(db.Model):
+    """Audit row written every time the predictor estimates a task.
+
+    One row per task: created when the task is first saved, updated with
+    actual_minutes when the task is marked done. model_version records
+    which predictor produced the estimate so we can compare heuristic
+    vs regression accuracy on the insights page.
+    """
+
+    __tablename__ = "predictions"
+
+    id = db.Column(db.Integer, primary_key=True)
+    task_id = db.Column(
+        db.Integer,
+        db.ForeignKey("tasks.id", ondelete="CASCADE"),
+        nullable=False, index=True,
+    )
+    predicted_minutes = db.Column(db.Integer, nullable=False)
+    # Filled in on task completion (Day 5).
+    actual_minutes = db.Column(db.Integer, nullable=True)
+    model_version = db.Column(db.String(40), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    task = db.relationship(
+        "Task",
+        backref=db.backref(
+            "predictions", lazy="dynamic", cascade="all, delete-orphan",
+            order_by="Prediction.created_at.desc()",
+        ),
+    )
+
+    def __repr__(self) -> str:
+        return (
+            f"<Prediction task={self.task_id} predicted={self.predicted_minutes} "
+            f"actual={self.actual_minutes} model={self.model_version}>"
+        )
 
 
 def seed_task_types() -> int:

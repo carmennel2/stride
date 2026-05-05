@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}
+  {% if task %}Edit {{ task.title }}{% else %}New task{% endif %} — StudyPilot
+{% endblock %}
+
+{% block content %}
+  <div class="row justify-content-center">
+    <div class="col-md-9 col-lg-7">
+      <div class="card shadow-sm">
+        <div class="card-body p-4 p-md-5">
+          <h1 class="card-title h4 mb-4">
+            {% if task %}Edit task{% else %}New task{% endif %}
+          </h1>
+
+          <form method="post" novalidate>
+            {{ form.hidden_tag() }}
+
+            <div class="mb-3">
+              {{ form.title.label(class="form-label") }}
+              {{ form.title(
+                  class="form-control" + (" is-invalid" if form.title.errors else ""),
+                  placeholder="e.g. Read chapters 4-5") }}
+              {% for error in form.title.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="row g-3">
+              <div class="col-md-6">
+                {{ form.subject_id.label(class="form-label") }}
+                {{ form.subject_id(
+                    class="form-select" + (" is-invalid" if form.subject_id.errors else "")) }}
+                {% for error in form.subject_id.errors %}
+                  <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+              </div>
+              <div class="col-md-6">
+                {{ form.type_id.label(class="form-label") }}
+                {{ form.type_id(
+                    class="form-select" + (" is-invalid" if form.type_id.errors else "")) }}
+                {% for error in form.type_id.errors %}
+                  <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+              </div>
+            </div>
+
+            <div class="row g-3 mt-1">
+              <div class="col-md-4">
+                {{ form.complexity.label(class="form-label") }}
+                {{ form.complexity(class="form-select") }}
+              </div>
+              <div class="col-md-4">
+                {{ form.target_words.label(class="form-label") }}
+                {{ form.target_words(
+                    class="form-control" + (" is-invalid" if form.target_words.errors else ""),
+                    placeholder="essays only") }}
+                {% for error in form.target_words.errors %}
+                  <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+              </div>
+              <div class="col-md-4">
+                {{ form.target_pages.label(class="form-label") }}
+                {{ form.target_pages(
+                    class="form-control" + (" is-invalid" if form.target_pages.errors else ""),
+                    placeholder="reading only") }}
+                {% for error in form.target_pages.errors %}
+                  <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+              </div>
+            </div>
+
+            <div class="mb-3 mt-3">
+              {{ form.due_date.label(class="form-label") }}
+              {{ form.due_date(
+                  class="form-control" + (" is-invalid" if form.due_date.errors else ""),
+                  type="date") }}
+              {% for error in form.due_date.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="mb-4">
+              {{ form.description.label(class="form-label") }}
+              {{ form.description(
+                  class="form-control" + (" is-invalid" if form.description.errors else ""),
+                  rows="4",
+                  placeholder="optional notes — also used as a feature for the predictor") }}
+              {% for error in form.description.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="d-flex gap-2">
+              {{ form.submit(class="btn btn-primary") }}
+              <a href="{{ url_for('tasks.list_tasks') }}"
+                 class="btn btn-outline-secondary">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
