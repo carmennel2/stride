@@ -39,6 +39,26 @@ def create_app(config_class: type[Config] = Config) -> Flask:
     @app.context_processor
     def inject_today() -> dict:
         return {"today": date.today()}
+
+    # Custom error pages. 404 covers both genuinely-missing pages and the
+    # "not yours" first_or_404() responses used throughout the app.
+    from flask import render_template
+
+    @app.errorhandler(404)
+    def not_found(_error):
+        return render_template("errors/404.html"), 404
+
+    @app.errorhandler(500)
+    def internal_error(_error):
+        # 500 means an unhandled exception — db state may be inconsistent.
+        # Roll back so subsequent requests on this connection don't see
+        # the half-written transaction.
+        db.session.rollback()
+        return render_template("errors/500.html"), 500
+
+    @app.errorhandler(403)
+    def forbidden(_error):
+        return render_template("errors/403.html"), 403
     # auth.login route is added on Day 2 — naming it now is harmless.
     login_manager.login_view = "auth.login"
 
