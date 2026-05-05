@@ -11,6 +11,7 @@ from flask_login import current_user, login_required
 
 from studypilot.extensions import db
 from studypilot.ml.predictor import predict_minutes
+from studypilot.ml.trainer import train_model_for_user
 from studypilot.models import Prediction, Subject, Task, TaskType, TASK_STATUSES
 from studypilot.sessions.forms import StudySessionForm
 from studypilot.tasks.forms import TaskForm
@@ -188,5 +189,15 @@ def update_status(task_id: int):
             latest.actual_minutes = None
 
     db.session.commit()
+
+    # Re-train the user's regression model when a task lands in "done".
+    # Wrapped in try/except so a training hiccup never blocks the user
+    # flow — they'll just see heuristic predictions until the next
+    # successful train.
+    if task.is_done:
+        try:
+            train_model_for_user(current_user.id)
+        except Exception:  # noqa: BLE001
+            pass
     flash(f"Task marked {new_status.replace('_', ' ')}.", "success")
     return redirect(url_for("tasks.task_detail", task_id=task.id))

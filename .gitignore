@@ -14,8 +14,8 @@ env/
 .env.local
 
 # Flask instance folder — holds the SQLite DB and per-user model pickles.
-# Never commit these; init-db recreates the DB and the predictor regenerates
-# the .pkl files on first task completion.
+# Never commit these; init-db recreates the DB and the trainer regenerates
+# the model_<user_id>.pkl files on each task completion.
 instance/
 
 # Editor / OS junk
