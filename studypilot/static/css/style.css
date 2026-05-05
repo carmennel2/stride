@@ -1,0 +1,11 @@
+/* StudyPilot custom styles.
+   Bootstrap covers most of the layout — this file is for small overrides. */
+
+.card {
+    border: none;
+}
+
+footer {
+    border-top: 1px solid #e5e5e5;
+    margin-top: 4rem;
+}

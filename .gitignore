@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Virtual envs
+venv/
+.venv/
+env/
+
+# Environment + secrets
+.env
+.env.local
+
+# Flask instance folder — holds the SQLite DB and per-user model pickles.
+# Never commit these; init-db recreates the DB and the predictor regenerates
+# the .pkl files on first task completion.
+instance/
+
+# Editor / OS junk
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Defensive — in case a stray DB or pickle ends up outside instance/
+*.sqlite
+*.sqlite3
+*.db
+*.pkl
