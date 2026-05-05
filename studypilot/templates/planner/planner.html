@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Planner — StudyPilot{% endblock %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">Planner</h1>
+    <span class="text-muted small">
+      Next {{ plan.summary.horizon_days }} days
+    </span>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <p class="text-muted small mb-1 text-uppercase">Open tasks</p>
+          <p class="h3 mb-0">{{ plan.summary.open_task_count }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <p class="text-muted small mb-1 text-uppercase">Total study time</p>
+          <p class="h3 mb-0">
+            {{ (plan.summary.total_minutes / 60) | round(1) }}
+            <span class="fs-6 text-muted">hours</span>
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <p class="text-muted small mb-1 text-uppercase">Average per day</p>
+          <p class="h3 mb-0">
+            {% if plan.summary.horizon_days > 0 %}
+              {{ (plan.summary.total_minutes / (plan.summary.horizon_days + 1)) | round(0, 'common') | int }}
+            {% else %}0{% endif %}
+            <span class="fs-6 text-muted">min</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if plan.summary.open_task_count == 0 %}
+    <div class="card shadow-sm">
+      <div class="card-body text-center text-muted py-5">
+        <p class="mb-0">
+          Nothing to plan — no open tasks in the next two weeks.
+        </p>
+      </div>
+    </div>
+  {% else %}
+    <div class="card shadow-sm">
+      <div class="table-responsive">
+        <table class="table mb-0 align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Date</th>
+              <th class="text-end">Minutes</th>
+              <th>Tasks</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for day in plan.days %}
+              <tr {% if day.date == today %}class="table-warning"{% endif %}>
+                <td class="fw-semibold" style="white-space: nowrap;">
+                  {{ day.date.strftime('%a %d %b') }}
+                  {% if day.date == today %}
+                    <span class="badge bg-warning text-dark">today</span>
+                  {% endif %}
+                </td>
+                <td class="text-end">
+                  {% if day.total_minutes %}
+                    {{ day.total_minutes }} min
+                  {% else %}
+                    <span class="text-muted">—</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if day.slots %}
+                    {% for slot in day.slots %}
+                      <a class="badge text-decoration-none"
+                         style="background-color: {{ slot.task.subject.color }}; color: white;"
+                         href="{{ url_for('tasks.task_detail', task_id=slot.task.id) }}"
+                         title="{{ slot.task.task_type.name }}, due {{ slot.task.due_date }}">
+                        {{ slot.task.title }} · {{ slot.minutes }}m
+                      </a>
+                    {% endfor %}
+                  {% else %}
+                    <span class="text-muted">free</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <p class="text-muted small mt-3">
+      Each open task is split evenly across the days from today through
+      its due date. Logged sessions are subtracted first, so partly-done
+      tasks only take up their remaining minutes.
+    </p>
+  {% endif %}
+{% endblock %}
