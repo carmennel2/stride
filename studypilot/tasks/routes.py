@@ -4,7 +4,7 @@ Same ownership pattern as subjects: every query starts with
 .filter_by(user_id=current_user.id) and uses first_or_404() so cross-user
 access is indistinguishable from a missing row.
 """
-from datetime import date, datetime
+from datetime import datetime
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
@@ -12,7 +12,7 @@ from flask_login import current_user, login_required
 from studypilot.extensions import db
 from studypilot.ml.predictor import predict_minutes
 from studypilot.ml.trainer import train_model_for_user
-from studypilot.models import Prediction, Subject, Task, TaskType, TASK_STATUSES
+from studypilot.models import Prediction, Subject, Task, TASK_STATUSES
 from studypilot.sessions.forms import StudySessionForm
 from studypilot.tasks.forms import TaskForm
 

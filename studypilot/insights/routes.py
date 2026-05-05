@@ -4,7 +4,7 @@ Day 11: layered on accuracy-over-time, per-subject averages, best study
 day, and a current-streak counter on top of the Day 9 scatter +
 summary.
 """
-from collections import Counter, defaultdict
+from collections import Counter
 from datetime import date, timedelta
 
 from flask import Blueprint, render_template
