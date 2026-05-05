@@ -36,6 +36,7 @@
               <th>Subject</th>
               <th>Type</th>
               <th class="text-end">Predicted</th>
+              <th class="text-end">Actual</th>
               <th>Due</th>
               <th>Status</th>
               <th></th>
@@ -58,6 +59,18 @@
                 </td>
                 <td>{{ task.task_type.name }}</td>
                 <td class="text-end">{{ task.predicted_minutes }} min</td>
+                {% set latest = task.predictions.first() %}
+                <td class="text-end">
+                  {% if task.is_done and latest and latest.actual_minutes %}
+                    {% set delta = latest.actual_minutes - task.predicted_minutes %}
+                    {{ latest.actual_minutes }} min
+                    <span class="small {% if delta > 0 %}text-danger{% elif delta < 0 %}text-success{% else %}text-muted{% endif %}">
+                      ({{ '+' if delta > 0 else '' }}{{ delta }})
+                    </span>
+                  {% else %}
+                    <span class="text-muted">—</span>
+                  {% endif %}
+                </td>
                 <td>
                   {{ task.due_date.strftime('%Y-%m-%d') }}
                   {% set days = (task.due_date - today).days %}

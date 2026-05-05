@@ -59,6 +59,13 @@
                   Subjects
                 </a>
               </li>
+              <li class="nav-item">
+                <a class="nav-link
+                          {% if request.endpoint and request.endpoint.startswith('insights.') %}active fw-semibold{% endif %}"
+                   href="{{ url_for('insights.insights') }}">
+                  Insights
+                </a>
+              </li>
             {% endif %}
           {% endblock %}
         </ul>

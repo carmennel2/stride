@@ -181,9 +181,28 @@
       <div class="card shadow-sm">
         <div class="card-body">
           <h2 class="h6 text-uppercase text-muted mb-3">Prediction</h2>
-          <p class="display-6 mb-1">{{ task.predicted_minutes }}
-            <span class="fs-6 text-muted">min</span>
-          </p>
+          <div class="row align-items-end mb-2">
+            <div class="col">
+              <p class="text-muted small mb-1">Predicted</p>
+              <p class="display-6 mb-0">{{ task.predicted_minutes }}
+                <span class="fs-6 text-muted">min</span></p>
+            </div>
+            {% if task.is_done and latest_prediction and latest_prediction.actual_minutes %}
+              {% set actual = latest_prediction.actual_minutes %}
+              {% set delta = actual - task.predicted_minutes %}
+              {% set pct = (delta / task.predicted_minutes * 100) | round(0, 'common') if task.predicted_minutes else 0 %}
+              <div class="col text-end">
+                <p class="text-muted small mb-1">Actual</p>
+                <p class="display-6 mb-0">{{ actual }}
+                  <span class="fs-6 text-muted">min</span></p>
+                <p class="small mb-0
+                          {% if delta > 0 %}text-danger{% elif delta < 0 %}text-success{% else %}text-muted{% endif %}">
+                  {{ '+' if delta > 0 else '' }}{{ delta }} min
+                  ({{ '+' if pct > 0 else '' }}{{ pct | int }}%)
+                </p>
+              </div>
+            {% endif %}
+          </div>
           {% if latest_prediction %}
             <p class="text-muted small mb-2">
               <span class="badge bg-light text-dark border">

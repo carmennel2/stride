@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Insights — StudyPilot{% endblock %}
+
+{% block content %}
+  <h1 class="h3 mb-4">Insights</h1>
+
+  {% if summary.count == 0 %}
+    <div class="card shadow-sm">
+      <div class="card-body text-center text-muted py-5">
+        <p class="mb-0">
+          Complete a few tasks with logged sessions to see prediction
+          accuracy here.
+        </p>
+      </div>
+    </div>
+  {% else %}
+    <div class="row g-3 mb-4">
+      <div class="col-md-3 col-6">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <p class="text-muted small mb-1 text-uppercase">Scored tasks</p>
+            <p class="h3 mb-0">{{ summary.count }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 col-6">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <p class="text-muted small mb-1 text-uppercase">Mean abs error</p>
+            <p class="h3 mb-0">{{ summary.mae }} <span class="fs-6 text-muted">min</span></p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 col-6">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <p class="text-muted small mb-1 text-uppercase">Bias (actual − predicted)</p>
+            <p class="h3 mb-0
+                      {% if summary.bias > 0 %}text-danger{% elif summary.bias < 0 %}text-success{% endif %}">
+              {{ '+' if summary.bias > 0 else '' }}{{ summary.bias }}
+              <span class="fs-6 text-muted">min</span>
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 col-6">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <p class="text-muted small mb-1 text-uppercase">By model</p>
+            <p class="mb-0 small">
+              {% for version, n in summary.by_version.items() %}
+                <span class="badge bg-light text-dark border me-1 mb-1">
+                  {{ version }} · {{ n }}
+                </span>
+              {% endfor %}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h2 class="h6 text-uppercase text-muted mb-3">
+          Predicted vs actual (minutes)
+        </h2>
+        <p class="text-muted small mb-3">
+          Each dot is one completed task. The diagonal is "predicted = actual";
+          dots above mean we under-predicted, dots below mean we over-predicted.
+        </p>
+        <canvas id="scatterChart" height="280"></canvas>
+      </div>
+    </div>
+
+    {# Day 11 will add: accuracy-over-time line, per-subject averages,
+       best study day card, streak, MAPE breakdown by model_version. #}
+  {% endif %}
+{% endblock %}
+
+{% block scripts %}
+  {% if summary.count > 0 %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
+    <script>
+      const points  = {{ scatter_points | tojson }};
+      const maxAxis = {{ max_axis | tojson }};
+      // Diagonal reference y = x as a line dataset.
+      const diagonal = [{x: 0, y: 0}, {x: maxAxis, y: maxAxis}];
+
+      new Chart(document.getElementById('scatterChart'), {
+        data: {
+          datasets: [
+            {
+              type: 'scatter',
+              label: 'Tasks',
+              data: points,
+              backgroundColor: '#3366ff',
+            },
+            {
+              type: 'line',
+              label: 'predicted = actual',
+              data: diagonal,
+              borderColor: 'rgba(0,0,0,0.25)',
+              borderDash: [4, 4],
+              pointRadius: 0,
+              fill: false,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: { title: { display: true, text: 'Predicted (min)' },
+                 beginAtZero: true },
+            y: { title: { display: true, text: 'Actual (min)' },
+                 beginAtZero: true },
+          },
+          plugins: { legend: { position: 'bottom' } },
+        },
+      });
+    </script>
+  {% endif %}
+{% endblock %}
