@@ -12,6 +12,7 @@ from flask_login import current_user, login_required
 from studypilot.extensions import db
 from studypilot.ml.predictor import predict_minutes
 from studypilot.models import Prediction, Subject, Task, TaskType, TASK_STATUSES
+from studypilot.sessions.forms import StudySessionForm
 from studypilot.tasks.forms import TaskForm
 
 bp = Blueprint("tasks", __name__, url_prefix="/tasks")
@@ -91,11 +92,15 @@ def task_detail(task_id: int):
     task = Task.query.filter_by(
         id=task_id, user_id=current_user.id
     ).first_or_404()
-    # Day 5 will add session_form here; Day 9 displays the latest prediction
-    # alongside actual minutes from study sessions.
     latest_prediction = task.predictions.first()
+    session_form = StudySessionForm()
+    total_minutes = sum(s.duration_minutes for s in task.sessions)
     return render_template(
-        "tasks/detail.html", task=task, latest_prediction=latest_prediction
+        "tasks/detail.html",
+        task=task,
+        latest_prediction=latest_prediction,
+        session_form=session_form,
+        total_minutes=total_minutes,
     )
 
 
@@ -172,6 +177,15 @@ def update_status(task_id: int):
         task.completed_at = datetime.utcnow()
     elif new_status != "done" and was_done:
         task.completed_at = None
+
+    # Sync the latest Prediction's actual_minutes from the session log.
+    # Reverting to non-done clears it so we don't leave stale data behind.
+    if task.is_done:
+        task.refresh_actual_minutes()
+    else:
+        latest = task.predictions.first()
+        if latest:
+            latest.actual_minutes = None
 
     db.session.commit()
     flash(f"Task marked {new_status.replace('_', ' ')}.", "success")

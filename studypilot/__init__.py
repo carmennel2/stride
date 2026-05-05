@@ -42,15 +42,17 @@ def create_app(config_class: type[Config] = Config) -> Flask:
     # auth.login route is added on Day 2 — naming it now is harmless.
     login_manager.login_view = "auth.login"
 
-    # Register blueprints. More will be added on Days 5-11.
+    # Register blueprints. More will be added on Days 6-11.
     from studypilot.auth.routes import bp as auth_bp
     from studypilot.main.routes import bp as main_bp
+    from studypilot.sessions.routes import bp as sessions_bp
     from studypilot.subjects.routes import bp as subjects_bp
     from studypilot.tasks.routes import bp as tasks_bp
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(subjects_bp)
     app.register_blueprint(tasks_bp)
+    app.register_blueprint(sessions_bp)
 
     # CLI commands.
     @app.cli.command("init-db")

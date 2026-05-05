@@ -157,6 +157,21 @@ class Task(db.Model):
     def is_done(self) -> bool:
         return self.status == "done"
 
+    def refresh_actual_minutes(self) -> None:
+        """Sync actual_minutes on the latest Prediction with summed sessions.
+
+        Only meaningful for done tasks: actual_minutes is "what the task
+        ended up taking," which doesn't apply while it's still pending.
+        Caller is responsible for committing the session.
+        """
+        if not self.is_done:
+            return
+        latest = self.predictions.first()  # ordered by created_at DESC
+        if latest is None:
+            return
+        total = sum(s.duration_minutes for s in self.sessions)
+        latest.actual_minutes = total or None
+
     def __repr__(self) -> str:
         return f"<Task {self.id} {self.title!r} status={self.status}>"
 
@@ -196,6 +211,52 @@ class Prediction(db.Model):
         return (
             f"<Prediction task={self.task_id} predicted={self.predicted_minutes} "
             f"actual={self.actual_minutes} model={self.model_version}>"
+        )
+
+
+class StudySession(db.Model):
+    """One stretch of time spent on a task.
+
+    Stored as start + end + computed duration so we can render a session
+    log per task and aggregate by day-of-week / subject for the dashboard.
+    Duration is denormalised into duration_minutes for fast aggregations
+    without wiring custom SQL on every query.
+    """
+
+    __tablename__ = "study_sessions"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False, index=True,
+    )
+    task_id = db.Column(
+        db.Integer,
+        db.ForeignKey("tasks.id", ondelete="CASCADE"),
+        nullable=False, index=True,
+    )
+    started_at = db.Column(db.DateTime, nullable=False)
+    ended_at = db.Column(db.DateTime, nullable=False)
+    duration_minutes = db.Column(db.Integer, nullable=False)
+    note = db.Column(db.String(500), nullable=False, default="")
+
+    user = db.relationship(
+        "User",
+        backref=db.backref("sessions", lazy="dynamic", cascade="all, delete-orphan"),
+    )
+    task = db.relationship(
+        "Task",
+        backref=db.backref(
+            "sessions", lazy="dynamic", cascade="all, delete-orphan",
+            order_by="StudySession.started_at.desc()",
+        ),
+    )
+
+    def __repr__(self) -> str:
+        return (
+            f"<StudySession task={self.task_id} "
+            f"{self.duration_minutes}m at {self.started_at}>"
         )
 
 
