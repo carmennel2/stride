@@ -81,6 +81,21 @@ def create_app(config_class: type[Config] = Config) -> Flask:
     app.register_blueprint(planner_bp)
 
     # CLI commands.
+    @app.cli.command("seed-demo")
+    def seed_demo_command() -> None:
+        """Populate a 'demo' account with realistic data and train its model.
+
+        Idempotent only by virtue of dropping anything the demo user already
+        owns. Useful for graders and for screenshots in the report.
+        """
+        from studypilot.demo_seed import seed_demo
+
+        with app.app_context():
+            summary = seed_demo()
+        click.echo("Demo user seeded:")
+        for k, v in summary.items():
+            click.echo(f"  {k}: {v}")
+
     @app.cli.command("init-db")
     def init_db_command() -> None:
         """Create all database tables and seed lookup data.
