@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}
+  {% if subject %}Edit {{ subject.name }}{% else %}New subject{% endif %}
+   — StudyPilot
+{% endblock %}
+
+{% block content %}
+  <div class="row justify-content-center">
+    <div class="col-md-7 col-lg-5">
+      <div class="card shadow-sm">
+        <div class="card-body p-4 p-md-5">
+          <h1 class="card-title h4 mb-4">
+            {% if subject %}Edit subject{% else %}New subject{% endif %}
+          </h1>
+
+          <form method="post" novalidate>
+            {{ form.hidden_tag() }}
+
+            <div class="mb-3">
+              {{ form.name.label(class="form-label") }}
+              {{ form.name(
+                  class="form-control" + (" is-invalid" if form.name.errors else ""),
+                  autocomplete="off",
+                  placeholder="e.g. Maths, Biology, ITDS620") }}
+              {% for error in form.name.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="mb-4">
+              {{ form.color.label(class="form-label") }}
+              <div class="d-flex align-items-center gap-3">
+                {# type=color renders the native picker in every modern browser
+                   and always produces a valid #rrggbb string on submit. #}
+                {{ form.color(
+                    class="form-control form-control-color" +
+                          (" is-invalid" if form.color.errors else ""),
+                    type="color",
+                    style="width: 4rem;") }}
+                <span class="text-muted small">
+                  Pick a colour to identify this subject in charts.
+                </span>
+              </div>
+              {% for error in form.color.errors %}
+                <div class="invalid-feedback d-block">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="d-flex gap-2">
+              {{ form.submit(class="btn btn-primary") }}
+              <a href="{{ url_for('subjects.list_subjects') }}"
+                 class="btn btn-outline-secondary">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Subjects — StudyPilot{% endblock %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">Subjects</h1>
+    <a href="{{ url_for('subjects.new_subject') }}" class="btn btn-primary">
+      + New subject
+    </a>
+  </div>
+
+  {% if subjects %}
+    <div class="card shadow-sm">
+      <div class="table-responsive">
+        <table class="table mb-0 align-middle">
+          <thead class="table-light">
+            <tr>
+              <th scope="col">Colour</th>
+              <th scope="col">Name</th>
+              <th scope="col">Created</th>
+              <th scope="col" class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for subject in subjects %}
+              <tr>
+                <td>
+                  {# Inline style is the simplest way to render the user's
+                     chosen colour swatch — no new CSS class per subject. #}
+                  <span class="d-inline-block rounded"
+                        style="width: 24px; height: 24px;
+                               background-color: {{ subject.color }};
+                               border: 1px solid rgba(0,0,0,0.1);"
+                        aria-label="Colour swatch"></span>
+                </td>
+                <td class="fw-semibold">{{ subject.name }}</td>
+                <td class="text-muted small">
+                  {{ subject.created_at.strftime('%Y-%m-%d') }}
+                </td>
+                <td class="text-end">
+                  <a class="btn btn-sm btn-outline-secondary"
+                     href="{{ url_for('subjects.edit_subject',
+                                      subject_id=subject.id) }}">
+                    Edit
+                  </a>
+                  {# Delete is POST-only, so it's a form, not a link.
+                     onsubmit confirms client-side; the server still
+                     re-validates ownership via first_or_404(). #}
+                  <form method="post"
+                        action="{{ url_for('subjects.delete_subject',
+                                           subject_id=subject.id) }}"
+                        class="d-inline"
+                        onsubmit="return confirm('Delete &quot;{{ subject.name }}&quot;?');">
+                    <input type="hidden" name="csrf_token"
+                           value="{{ csrf_token() }}">
+                    <button type="submit"
+                            class="btn btn-sm btn-outline-danger">
+                      Delete
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% else %}
+    <div class="card shadow-sm">
+      <div class="card-body text-center text-muted py-5">
+        <p class="mb-3">You haven't added any subjects yet.</p>
+        <a class="btn btn-primary"
+           href="{{ url_for('subjects.new_subject') }}">
+          Create your first subject
+        </a>
+      </div>
+    </div>
+  {% endif %}
+{% endblock %}
