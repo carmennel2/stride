@@ -2,19 +2,6 @@
 
 A personal study-tracking web app that predicts how long your tasks will take, based on a model trained on your own past study sessions.
 
-## What it does
-
-- **Tasks**: tag each task with subject, type, and complexity 1–5; add target words / pages where relevant.
-- **Sessions**: log study time against a task; durations are summed into an "actual minutes" figure on completion.
-- **Predictor (two layers)**:
-  - A heuristic baseline using a per-type table (`Reading: 3 min × pages × (0.7 + 0.15c)` etc.).
-  - A per-user Ridge regression that takes over after the user has 5+ completed tasks. Trained on every task completion, pickled to `instance/model_<user_id>.pkl`. Sanity-guarded: a regression prediction below the 15-minute floor or more than 3× the heuristic falls back to the heuristic.
-- **Dashboard**: KPIs (hours total, hours this week, open tasks, done tasks), pie chart by subject, bar chart by day-of-week, due-soon table.
-- **Smart planner**: distributes each open task's remaining minutes evenly across the days from today to its due date (next 14 days).
-- **Calendar**: month grid with tasks shown on their due dates, coloured by subject.
-- **Insights**: streak, best study day, predicted-vs-actual scatter with `y=x` reference, signed-delta drift line, by-subject totals and averages.
-- **Authentication**: Werkzeug password hashing, Flask-Login session management, CSRF on every POST. Every database query filters by `user_id == current_user.id`, and routes use `first_or_404()` so cross-user access is indistinguishable from a missing row. Session cookies are `HttpOnly`, `SameSite=Lax`, and `Secure` in production.
-- **Google sign-in (optional)**: federated login alongside username/password. Uses Authlib for OpenID Connect; a separate `oauth_identities` table maps `(provider, provider_user_id)` to a `User`.
 
 ## Tech stack
 
