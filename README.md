@@ -4,11 +4,7 @@ A personal study-tracking web app that predicts how long your tasks will take, b
 
 Built for the ITDS620 *Programming Languages and Software Development* summative assessment.
 
-![tests](https://img.shields.io/badge/tests-136%20passing-brightgreen)
-![coverage](https://img.shields.io/badge/coverage-87%25-success)
-![python](https://img.shields.io/badge/python-3.10%20%7C%203.11-blue)
-![lint](https://img.shields.io/badge/ruff-clean-success)
-![types](https://img.shields.io/badge/mypy-clean-success)
+**Live demo:** https://carmennel.pythonanywhere.com/ (sign in as `demo` / `Demo1234!`)
 
 ## Features
 
@@ -19,9 +15,10 @@ Built for the ITDS620 *Programming Languages and Software Development* summative
   - A per-user Ridge regression that takes over after the user has 5+ completed tasks. Trained on every task completion, pickled to `instance/model_<user_id>.pkl`. Sanity-guarded: a regression prediction below the 15-minute floor or more than 3× the heuristic falls back to the heuristic.
 - **Dashboard**: KPIs (hours total, hours this week, open tasks, done tasks), pie chart by subject, bar chart by day-of-week, due-soon table.
 - **Smart planner**: distributes each open task's remaining minutes evenly across the days from today to its due date (next 14 days).
+- **Calendar**: month grid with tasks shown on their due dates, coloured by subject.
 - **Insights**: streak, best study day, predicted-vs-actual scatter with `y=x` reference, signed-delta drift line, by-subject totals and averages.
-- **Authentication**: Werkzeug password hashing, Flask-Login session management, CSRF on every POST. Every database query filters by `user_id == current_user.id`, and routes use `first_or_404()` so cross-user access is indistinguishable from a missing row. Session cookies are `HttpOnly`, `SameSite=Lax`, and `Secure` in production; `session_protection="strong"` rotates the session id on IP/User-Agent change.
-- **Google sign-in (optional)**: federated login alongside username/password. Uses Authlib for OpenID Connect; a separate `oauth_identities` table maps `(provider, provider_user_id)` to a `User`. The schema is provider-agnostic so additional providers can be wired up later without a migration.
+- **Authentication**: Werkzeug password hashing, Flask-Login session management, CSRF on every POST. Every database query filters by `user_id == current_user.id`, and routes use `first_or_404()` so cross-user access is indistinguishable from a missing row. Session cookies are `HttpOnly`, `SameSite=Lax`, and `Secure` in production.
+- **Google sign-in (optional)**: federated login alongside username/password. Uses Authlib for OpenID Connect; a separate `oauth_identities` table maps `(provider, provider_user_id)` to a `User`.
 
 ## Tech stack
 
@@ -54,7 +51,7 @@ cp .env.example .env
 # 5. Initialise the database (creates tables and seeds the task type lookup)
 flask --app app.py init-db
 
-# 6. (Optional) Seed a demo user with 25 completed tasks across 4 subjects
+# 6. (Optional) Seed a demo user with the project's modules and a populated history
 flask --app app.py seed-demo
 # Logs in as: demo / Demo1234!
 
@@ -63,15 +60,9 @@ flask --app app.py run --debug
 # Open http://127.0.0.1:5000
 ```
 
-## Deployment
-
-See [`DEPLOY.md`](DEPLOY.md) for step-by-step PythonAnywhere and Render
-instructions.
-
 ## Database schema
 
-Six user-scoped tables plus a global `task_types` lookup. All foreign
-keys cascade where appropriate.
+Six user-scoped tables plus a global `task_types` lookup. All foreign keys cascade where appropriate.
 
 ```mermaid
 erDiagram
@@ -159,52 +150,41 @@ erDiagram
 
 ```
 stride/
-├── app.py                          entry point: flask --app app.py run --debug
-├── config.py                       Config + TestConfig
+├── app.py                  entry point: flask --app app.py run --debug
+├── config.py               Config + TestConfig
 ├── requirements.txt
-├── requirements-dev.txt            extra: pytest, pytest-cov, ruff, mypy
-├── pyproject.toml                  ruff + mypy + coverage config
+├── requirements-dev.txt
+├── pyproject.toml          ruff config
 ├── pytest.ini
-├── Makefile                        install / run / test / lint / clean
-├── Dockerfile                      multi-stage; gunicorn runtime
 ├── .env.example
-├── .github/workflows/ci.yml        tests + lint on push
 ├── README.md
-├── REPORT.md                       written report for the assignment
-├── DEPLOY.md                       PythonAnywhere + Render deployment
-├── SUBMISSION.md                   PDF submission checklist
-├── instance/                       SQLite db + per-user model pickles (gitignored)
-├── tests/                          117 tests against in-memory SQLite
+├── REPORT.md               written report for the assignment
+├── instance/               SQLite db + per-user model pickles (gitignored)
+├── tests/                  pytest suite against in-memory SQLite
 └── stride/
-    ├── __init__.py                 create_app factory + init-db / seed-demo CLI
-    ├── extensions.py               db, login_manager, csrf, oauth singletons
-    ├── models.py                   User, OAuthIdentity, Subject, TaskType, Task, StudySession, Prediction
-    ├── auth/                       /auth/signup, /auth/login, /auth/logout, /auth/oauth/<provider>/*
-    ├── subjects/                   /subjects CRUD
-    ├── tasks/                      /tasks CRUD + status transitions
-    ├── sessions/                   /sessions/task/<id>/new, /sessions/<id>/delete
-    ├── dashboard/                  /dashboard
-    ├── planner/                    /planner — two-week distribution
-    ├── insights/                   /insights — accuracy charts and streak
-    ├── ml/                         predictor.py, features.py, trainer.py
-    ├── templates/                  base.html + per-blueprint subfolders + errors/
+    ├── __init__.py         create_app factory + init-db / seed-demo CLI
+    ├── extensions.py       db, login_manager, csrf, oauth singletons
+    ├── models.py           User, OAuthIdentity, Subject, TaskType, Task, StudySession, Prediction
+    ├── auth/               /auth/signup, /auth/login, /auth/logout, /auth/oauth/google/*
+    ├── subjects/           /subjects CRUD
+    ├── tasks/              /tasks CRUD + status transitions
+    ├── sessions/           /sessions/task/<id>/new, /sessions/<id>/delete
+    ├── dashboard/          /dashboard
+    ├── planner/            /planner — two-week distribution
+    ├── calendar/           /calendar — monthly grid
+    ├── insights/           /insights — accuracy charts and streak
+    ├── account/            /account — profile + password + linked accounts
+    ├── ml/                 predictor.py, features.py, trainer.py
+    ├── templates/          base.html + per-blueprint subfolders + errors/
     └── static/css/style.css
 ```
-
-## Architecture notes
-
-- **Blueprint per feature.** Each top-level URL prefix lives in its own package with `__init__.py`, `routes.py`, and (where needed) `forms.py`. Models stay shared in `stride/models.py`.
-- **Ownership pattern.** Every protected route is `@login_required`; every query that touches user data starts with `.filter_by(user_id=current_user.id)`; ID-based lookups use `first_or_404()` so attempts to access another user's row return the same 404 as a missing row.
-- **Predictor staging.** `predict_minutes(task, user)` is the only public entry point. It tries the user's pickled regression first (loaded lazily; sklearn isn't imported until needed), falls back to the heuristic on any failure, sanity-guards the result, and clamps to `[15 min, 12 h]`.
-- **Session hardening.** Cookies are `HttpOnly` + `SameSite=Lax`; `Secure` activates in production via `FLASK_ENV`. `session_protection="strong"` rotates the session id on IP/User-Agent change. Remember-me cookies use the same flags with a 30-day lifetime; regular sessions expire after 7 days of inactivity.
 
 ## Tests
 
 ```bash
-make test            # 136 tests, in-memory SQLite, < 10 seconds
-make lint            # ruff
-make typecheck       # mypy
+pip install -r requirements-dev.txt
+python -m pytest tests/
 ```
 
-The CI workflow at `.github/workflows/ci.yml` runs ruff, mypy, and
-pytest with coverage on Python 3.10 and 3.11 on every push.
+The suite uses an in-memory SQLite database via the `TestConfig`, so each test
+gets a clean schema. Run-time: under 10 seconds.

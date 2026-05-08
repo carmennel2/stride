@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 .pytest_cache/
+.ruff_cache/
 
 # Virtual envs
 venv/
@@ -13,9 +14,7 @@ env/
 .env
 .env.local
 
-# Flask instance folder — holds the SQLite DB and per-user model pickles.
-# Never commit these; init-db recreates the DB and the trainer regenerates
-# the model_<user_id>.pkl files on each task completion.
+# Flask instance folder — SQLite DB and per-user model pickles.
 instance/
 
 # Editor / OS junk
@@ -24,7 +23,10 @@ instance/
 .DS_Store
 Thumbs.db
 
-# Defensive — in case a stray DB or pickle ends up outside instance/
+# Word lock files
+~$*
+
+# Defensive — stray DB or pickle outside instance/
 *.sqlite
 *.sqlite3
 *.db
