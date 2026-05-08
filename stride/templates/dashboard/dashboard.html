@@ -147,94 +147,19 @@
 
 {% block scripts %}
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
-  <script>
-    const subjLabels = {{ subj_labels | tojson }};
-    const subjHours  = {{ subj_hours  | tojson }};
-    const subjColors = {{ subj_colors | tojson }};
-    const weekdayLabels = {{ weekday_labels | tojson }};
-    const weekdayHours  = {{ weekday_hours  | tojson }};
 
-    if (subjLabels.length) {
-      new Chart(document.getElementById('subjectChart'), {
-        type: 'pie',
-        data: {
-          labels: subjLabels,
-          datasets: [{ data: subjHours, backgroundColor: subjColors }],
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { position: 'bottom' } },
-        },
-      });
-    }
+  <script id="subject-chart-data" type="application/json">
+    {"labels": {{ subj_labels | tojson }},
+     "hours":  {{ subj_hours  | tojson }},
+     "colors": {{ subj_colors | tojson }}}
+  </script>
 
-    if (weekdayHours.reduce((a,b) => a+b, 0) > 0) {
-      new Chart(document.getElementById('weekdayChart'), {
-        type: 'bar',
-        data: {
-          labels: weekdayLabels,
-          datasets: [{
-            label: 'Hours',
-            data: weekdayHours,
-            backgroundColor: '#10b981',
-          }],
-        },
-        options: {
-          responsive: true,
-          scales: { y: { beginAtZero: true, title: { display: true, text: 'Hours' } } },
-          plugins: { legend: { display: false } },
-        },
-      });
-    }
+  <script id="weekday-chart-data" type="application/json">
+    {"labels": {{ weekday_labels | tojson }},
+     "hours":  {{ weekday_hours  | tojson }}}
+  </script>
 
-    // ---- Browser notifications for tasks due today / tomorrow ----
-    // In-tab only. A full Web Push setup with service worker + VAPID
-    // would also fire when the page is closed; out of scope here.
-    (function () {
-      const targets = {{ notify_targets | tojson }};
-      const btn = document.getElementById('notifyBtn');
-      const label = document.getElementById('notifyBtnLabel');
-      if (!('Notification' in window) || !btn) return;
-
-      function refreshButton() {
-        btn.classList.remove('d-none');
-        if (Notification.permission === 'granted') {
-          label.textContent = 'Reminders enabled';
-          btn.disabled = true;
-        } else if (Notification.permission === 'denied') {
-          label.textContent = 'Reminders blocked by your browser';
-          btn.disabled = true;
-        } else {
-          label.textContent = 'Enable due-task reminders';
-          btn.disabled = false;
-        }
-      }
-
-      // Storage key includes today's date — one notification per task per day.
-      function fireFor(targets) {
-        const today = new Date().toISOString().slice(0, 10);
-        const seen = JSON.parse(localStorage.getItem('stride.notified') || '{}');
-        for (const t of targets) {
-          const key = today + ':' + t.id;
-          if (seen[key]) continue;
-          new Notification('Due ' + t.due_label + ': ' + t.title, {
-            body: t.subject,
-            tag: 'stride-task-' + t.id,
-          });
-          seen[key] = 1;
-        }
-        localStorage.setItem('stride.notified', JSON.stringify(seen));
-      }
-
-      btn.addEventListener('click', function () {
-        Notification.requestPermission().then(function (perm) {
-          refreshButton();
-          if (perm === 'granted') fireFor(targets);
-        });
-      });
-
-      refreshButton();
-      if (Notification.permission === 'granted') fireFor(targets);
-    })();
+  <script id="notify-targets-data" type="application/json">
+    {{ notify_targets | tojson }}
   </script>
 {% endblock %}

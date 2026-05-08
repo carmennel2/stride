@@ -169,59 +169,14 @@
 {% block scripts %}
   {% if summary.count or accuracy_series %}
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
-    <script>
-      const points  = {{ scatter_points | tojson }};
-      const maxAxis = {{ max_axis | tojson }};
-      const drift   = {{ accuracy_series | tojson }};
 
-      if (points.length) {
-        const diagonal = [{x: 0, y: 0}, {x: maxAxis, y: maxAxis}];
-        new Chart(document.getElementById('scatterChart'), {
-          data: {
-            datasets: [
-              { type: 'scatter', label: 'Tasks', data: points,
-                backgroundColor: '#10b981' },
-              { type: 'line', label: 'predicted = actual', data: diagonal,
-                borderColor: 'rgba(0,0,0,0.25)', borderDash: [4,4],
-                pointRadius: 0, fill: false },
-            ],
-          },
-          options: {
-            responsive: true,
-            scales: {
-              x: { title: { display: true, text: 'Predicted (min)' },
-                   beginAtZero: true },
-              y: { title: { display: true, text: 'Actual (min)' },
-                   beginAtZero: true },
-            },
-            plugins: { legend: { position: 'bottom' } },
-          },
-        });
-      }
+    <script id="scatter-chart-data" type="application/json">
+      {"points":  {{ scatter_points | tojson }},
+       "maxAxis": {{ max_axis       | tojson }}}
+    </script>
 
-      if (drift.length) {
-        new Chart(document.getElementById('driftChart'), {
-          type: 'line',
-          data: {
-            labels: drift.map(d => d.x),
-            datasets: [{
-              label: 'Delta (actual − predicted)',
-              data: drift.map(d => d.y),
-              borderColor: '#10b981',
-              backgroundColor: 'rgba(16,185,129,0.1)',
-              tension: 0.2,
-              fill: true,
-            }],
-          },
-          options: {
-            responsive: true,
-            scales: {
-              y: { title: { display: true, text: 'Minutes off' } },
-            },
-            plugins: { legend: { display: false } },
-          },
-        });
-      }
+    <script id="drift-chart-data" type="application/json">
+      {"series": {{ accuracy_series | tojson }}}
     </script>
   {% endif %}
 {% endblock %}
