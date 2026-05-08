@@ -21,48 +21,91 @@ DEMO_USERNAME = "demo"
 DEMO_EMAIL = "demo@stride.local"
 DEMO_PASSWORD = "Demo1234!"
 
+# Modules from the master's programme this project is for.
 DEMO_SUBJECTS = [
-    ("Mathematics", "#3b82f6"),
-    ("Biology", "#10b981"),
-    ("History", "#f59e0b"),
-    ("Programming", "#8b5cf6"),
+    ("ITDS420 Data Structures and Algorithms", "#3b82f6"),
+    ("ITDS440 Statistical Analysis for Data Science", "#10b981"),
+    ("ITDS460 Data Analytics and Visualization", "#f59e0b"),
+    ("ITDS520 Big Data Technologies and Analytics", "#8b5cf6"),
+    ("ITDS540 Machine Learning and Artificial Intelligence", "#ec4899"),
+    ("ITDS620 Programming languages and software development", "#6366f1"),
+    ("TDS640 Cloud Computing and Distributed Systems", "#06b6d4"),
+    ("ITDS660 Ethical and Legal Issues Related to Data Science", "#f43f5e"),
+    ("ITDS680 Capstone Project or Internship in IT and Data Science", "#f97316"),
 ]
 
+# Task mix per subject. Subject indices match DEMO_SUBJECTS order above.
 COMPLETED_TASK_TEMPLATES = [
+    # ITDS420 — Data Structures and Algorithms (algorithm-heavy)
     (0, "Problem Set", {"complexity": 3}),
     (0, "Problem Set", {"complexity": 4}),
-    (0, "Problem Set", {"complexity": 2}),
+    (0, "Coding",      {"complexity": 4}),
+    (0, "Coding",      {"complexity": 3}),
     (0, "Revision",    {"complexity": 3}),
-    (0, "Revision",    {"complexity": 4}),
-    (0, "Reading",     {"complexity": 2, "target_pages": 18}),
-    (1, "Reading",     {"complexity": 3, "target_pages": 24}),
-    (1, "Reading",     {"complexity": 2, "target_pages": 12}),
-    (1, "Essay",       {"complexity": 3, "target_words": 1200}),
+
+    # ITDS440 — Statistical Analysis (problem sets + report writing)
+    (1, "Problem Set", {"complexity": 3}),
+    (1, "Reading",     {"complexity": 2, "target_pages": 20}),
+    (1, "Essay",       {"complexity": 3, "target_words": 1500}),
+    (1, "Problem Set", {"complexity": 4}),
     (1, "Revision",    {"complexity": 3}),
-    (1, "Revision",    {"complexity": 4}),
-    (2, "Essay",       {"complexity": 4, "target_words": 1800}),
-    (2, "Essay",       {"complexity": 3, "target_words": 1500}),
-    (2, "Reading",     {"complexity": 3, "target_pages": 30}),
-    (2, "Reading",     {"complexity": 2, "target_pages": 20}),
-    (2, "Revision",    {"complexity": 2}),
-    (3, "Coding",      {"complexity": 3}),
+
+    # ITDS460 — Data Analytics and Visualization (coding + write-ups)
+    (2, "Coding",      {"complexity": 3}),
+    (2, "Reading",     {"complexity": 2, "target_pages": 15}),
+    (2, "Essay",       {"complexity": 2, "target_words": 1200}),
+    (2, "Coding",      {"complexity": 3}),
+    (2, "Other",       {"complexity": 2}),
+
+    # ITDS520 — Big Data Technologies (heavy reading + cluster work)
+    (3, "Reading",     {"complexity": 3, "target_pages": 25}),
     (3, "Coding",      {"complexity": 4}),
-    (3, "Coding",      {"complexity": 5}),
-    (3, "Coding",      {"complexity": 2}),
-    (3, "Problem Set", {"complexity": 4}),
-    (3, "Reading",     {"complexity": 2, "target_pages": 14}),
-    (3, "Other",       {"complexity": 3}),
-    (3, "Revision",    {"complexity": 3}),
+    (3, "Essay",       {"complexity": 3, "target_words": 1800}),
     (3, "Coding",      {"complexity": 3}),
+
+    # ITDS540 — Machine Learning and AI (coding-dominant)
+    (4, "Coding",      {"complexity": 5}),
+    (4, "Coding",      {"complexity": 4}),
+    (4, "Problem Set", {"complexity": 4}),
+    (4, "Reading",     {"complexity": 3, "target_pages": 30}),
+    (4, "Revision",    {"complexity": 4}),
+
+    # ITDS620 — Programming languages and software development
+    (5, "Coding",      {"complexity": 4}),
+    (5, "Coding",      {"complexity": 3}),
+    (5, "Essay",       {"complexity": 3, "target_words": 2000}),
+    (5, "Reading",     {"complexity": 2, "target_pages": 18}),
+
+    # TDS640 — Cloud Computing
+    (6, "Coding",      {"complexity": 4}),
+    (6, "Reading",     {"complexity": 3, "target_pages": 22}),
+    (6, "Essay",       {"complexity": 2, "target_words": 1200}),
+    (6, "Coding",      {"complexity": 3}),
+
+    # ITDS660 — Ethical and Legal Issues (essay + reading dominant)
+    (7, "Essay",       {"complexity": 4, "target_words": 2500}),
+    (7, "Reading",     {"complexity": 3, "target_pages": 35}),
+    (7, "Essay",       {"complexity": 3, "target_words": 1800}),
+    (7, "Reading",     {"complexity": 2, "target_pages": 20}),
+
+    # ITDS680 — Capstone (mixed: build + write)
+    (8, "Coding",      {"complexity": 5}),
+    (8, "Essay",       {"complexity": 4, "target_words": 3000}),
+    (8, "Other",       {"complexity": 4}),
+    (8, "Reading",     {"complexity": 3, "target_pages": 28}),
 ]
 
+# One open task per module, due-dates spread across the planner horizon.
 OPEN_TASK_TEMPLATES = [
-    (0, "Problem Set", {"complexity": 4}, 2),
-    (1, "Essay",       {"complexity": 3, "target_words": 1500}, 6),
-    (2, "Reading",     {"complexity": 3, "target_pages": 22}, 3),
-    (2, "Essay",       {"complexity": 4, "target_words": 2000}, 9),
-    (3, "Coding",      {"complexity": 4}, 5),
-    (3, "Revision",    {"complexity": 2}, 1),
+    (0, "Problem Set", {"complexity": 3}, 3),
+    (1, "Essay",       {"complexity": 4, "target_words": 1500}, 7),
+    (2, "Coding",      {"complexity": 3}, 5),
+    (3, "Reading",     {"complexity": 3, "target_pages": 25}, 4),
+    (4, "Coding",      {"complexity": 5}, 9),
+    (5, "Coding",      {"complexity": 4}, 6),
+    (6, "Reading",     {"complexity": 2, "target_pages": 15}, 2),
+    (7, "Essay",       {"complexity": 4, "target_words": 2000}, 10),
+    (8, "Other",       {"complexity": 3}, 12),
 ]
 
 
@@ -98,11 +141,12 @@ def seed_demo(rng_seed: int = 42) -> dict:
     completed_count = 0
     today = date.today()
 
-    # Spread completed tasks across the previous ~60 days. Actual minutes
-    # are heuristic * 1.15 with ±15% noise so the regression has a
+    # Spread the completed tasks across the previous ~80 days. Actual
+    # minutes are heuristic * 1.15 with ±15% noise so the regression has a
     # learnable bias on top of irreducible per-task variance.
+    spacing_days = max(1, 80 // max(1, len(COMPLETED_TASK_TEMPLATES)))
     for offset, (subj_idx, type_name, kw) in enumerate(COMPLETED_TASK_TEMPLATES):
-        days_ago = 60 - offset * 2
+        days_ago = 80 - offset * spacing_days
         created = datetime.utcnow() - timedelta(days=days_ago)
         completed = created + timedelta(days=1)
         due = (created + timedelta(days=2)).date()
@@ -212,6 +256,9 @@ def _split_minutes(total: int, n_pieces: int, rng: random.Random) -> list[int]:
 
 
 def _title_for(subject: str, type_name: str, idx: int) -> str:
+    # Use just the module code (e.g. "ITDS540") in the title to keep it
+    # readable; the subject column already shows the full name.
+    code = subject.split(" ", 1)[0] if " " in subject else subject
     bank = {
         "Reading":     ["Read chapter", "Skim chapter", "Re-read section"],
         "Essay":       ["Draft essay", "Write essay", "Edit essay"],
@@ -221,7 +268,7 @@ def _title_for(subject: str, type_name: str, idx: int) -> str:
         "Other":       ["Notes review", "Quiz prep", "Catch-up"],
     }
     head = bank.get(type_name, ["Task"])[idx % len(bank.get(type_name, ["Task"]))]
-    return f"{subject} — {head} {idx + 1}"
+    return f"{code} — {head} {idx + 1}"
 
 
 def _description_for(type_name: str) -> str:
