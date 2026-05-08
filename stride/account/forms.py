@@ -7,9 +7,7 @@ from stride.auth.forms import PASSWORD_MAX_LENGTH, strong_password
 
 
 class ChangePasswordForm(FlaskForm):
-    # Optional in the field sense — required only when the user already
-    # has a local password (OAuth-only accounts setting one for the
-    # first time skip this).
+    # Only required for users who already have a password.
     current_password = PasswordField("Current password")
     new_password = PasswordField(
         "New password",

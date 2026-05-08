@@ -141,9 +141,8 @@ def seed_demo(rng_seed: int = 42) -> dict:
     completed_count = 0
     today = date.today()
 
-    # Spread the completed tasks across the previous ~80 days. Actual
-    # minutes are heuristic * 1.15 with ±15% noise so the regression has a
-    # learnable bias on top of irreducible per-task variance.
+    # actual_minutes = heuristic * 1.15 ±15% so the regression has a
+    # learnable bias to fit.
     spacing_days = max(1, 80 // max(1, len(COMPLETED_TASK_TEMPLATES)))
     for offset, (subj_idx, type_name, kw) in enumerate(COMPLETED_TASK_TEMPLATES):
         days_ago = 80 - offset * spacing_days

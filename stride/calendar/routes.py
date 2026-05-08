@@ -19,9 +19,7 @@ def _month_grid(year: int, month: int) -> list[list[date | None]]:
     """6×7 grid of dates for the calendar; None for spillover."""
     cal = _calendar.Calendar(firstweekday=0)  # Monday
     weeks = cal.monthdatescalendar(year, month)
-    # Filter out leading/trailing weeks that are entirely outside the month?
-    # No — keeping them gives a stable 5–6 row grid that doesn't shift around.
-    # Mark spillover dates so the template can grey them out.
+    # Spillover dates become None so the template can grey them out.
     return [
         [d if d.month == month else None for d in week]
         for week in weeks
