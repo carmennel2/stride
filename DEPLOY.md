@@ -81,14 +81,13 @@ In the **Web** tab, scroll to **Environment variables** and add:
 Click the green **Reload** button. Your app is live at
 `https://<your-username>.pythonanywhere.com/`.
 
-### 9. (Optional) OAuth callbacks
+### 9. (Optional) Google OAuth callback
 
-Each OAuth provider needs the production callback URL added to the list
-of valid redirect URIs in its developer console:
+If you set `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` in step 7, add
+the production callback URL to the list of "Authorised redirect URIs"
+in your Google Cloud OAuth client:
 
-- Google: `https://<your-username>.pythonanywhere.com/auth/oauth/google/callback`
-- Microsoft: `https://<your-username>.pythonanywhere.com/auth/oauth/microsoft/callback`
-- Facebook: `https://<your-username>.pythonanywhere.com/auth/oauth/facebook/callback`
+- `https://<your-username>.pythonanywhere.com/auth/oauth/google/callback`
 
 ---
 

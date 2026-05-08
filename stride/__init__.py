@@ -137,32 +137,6 @@ def _register_oauth_providers(app: Flask) -> None:
         )
         configured.append("google")
 
-    if app.config.get("MICROSOFT_CLIENT_ID") and app.config.get("MICROSOFT_CLIENT_SECRET"):
-        oauth.register(
-            name="microsoft",
-            client_id=app.config["MICROSOFT_CLIENT_ID"],
-            client_secret=app.config["MICROSOFT_CLIENT_SECRET"],
-            server_metadata_url=(
-                "https://login.microsoftonline.com/common/v2.0/"
-                ".well-known/openid-configuration"
-            ),
-            client_kwargs={"scope": "openid email profile"},
-        )
-        configured.append("microsoft")
-
-    if app.config.get("FACEBOOK_CLIENT_ID") and app.config.get("FACEBOOK_CLIENT_SECRET"):
-        # Facebook isn't OIDC; userinfo comes from Graph API.
-        oauth.register(
-            name="facebook",
-            client_id=app.config["FACEBOOK_CLIENT_ID"],
-            client_secret=app.config["FACEBOOK_CLIENT_SECRET"],
-            access_token_url="https://graph.facebook.com/v18.0/oauth/access_token",
-            authorize_url="https://www.facebook.com/v18.0/dialog/oauth",
-            api_base_url="https://graph.facebook.com/v18.0/",
-            client_kwargs={"scope": "email"},
-        )
-        configured.append("facebook")
-
     from stride.auth.oauth import PROVIDERS as _ALL_OAUTH_PROVIDERS
 
     @app.context_processor

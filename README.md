@@ -21,7 +21,7 @@ Built for the ITDS620 *Programming Languages and Software Development* summative
 - **Smart planner**: distributes each open task's remaining minutes evenly across the days from today to its due date (next 14 days).
 - **Insights**: streak, best study day, predicted-vs-actual scatter with `y=x` reference, signed-delta drift line, by-subject totals and averages.
 - **Authentication**: Werkzeug password hashing, Flask-Login session management, CSRF on every POST. Every database query filters by `user_id == current_user.id`, and routes use `first_or_404()` so cross-user access is indistinguishable from a missing row. Session cookies are `HttpOnly`, `SameSite=Lax`, and `Secure` in production; `session_protection="strong"` rotates the session id on IP/User-Agent change.
-- **OAuth sign-in (Google, Microsoft, Facebook)**: optional federated login alongside username/password. Uses Authlib for OpenID Connect (Google, Microsoft) and OAuth 2.0 (Facebook); a separate `oauth_identities` table maps `(provider, provider_user_id)` to a `User`, so one account can carry multiple federated identities.
+- **Google sign-in (optional)**: federated login alongside username/password. Uses Authlib for OpenID Connect; a separate `oauth_identities` table maps `(provider, provider_user_id)` to a `User`. The schema is provider-agnostic so additional providers can be wired up later without a migration.
 
 ## Tech stack
 
@@ -148,7 +148,7 @@ erDiagram
 | Table | Purpose |
 |---|---|
 | `users` | accounts (Werkzeug-hashed password, nullable for OAuth-only users; unique username + email) |
-| `oauth_identities` | links a user to one external identity at Google/Microsoft/Facebook; unique on (provider, provider_user_id) |
+| `oauth_identities` | links a user to one external identity at an OAuth provider (currently Google); unique on (provider, provider_user_id) |
 | `subjects` | per-user subject list, unique-by-(user_id, name), with hex colour |
 | `task_types` | global lookup seeded with Reading, Essay, Problem Set, Coding, Revision, Other |
 | `tasks` | the work the user is tracking |

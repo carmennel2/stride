@@ -1,4 +1,4 @@
-"""OAuth sign-in for Google, Microsoft, and Facebook."""
+"""OAuth sign-in for Google."""
 from __future__ import annotations
 
 import logging
@@ -15,11 +15,9 @@ bp = Blueprint("oauth", __name__, url_prefix="/auth/oauth")
 logger = logging.getLogger(__name__)
 
 
-PROVIDERS = ("google", "microsoft", "facebook")
+PROVIDERS = ("google",)
 PROVIDER_LABELS = {
     "google": "Google",
-    "microsoft": "Microsoft",
-    "facebook": "Facebook",
 }
 
 
@@ -38,7 +36,7 @@ def _setup_flash(provider: str):
     label = PROVIDER_LABELS[provider]
     flash(
         f"Sign in with {label} isn't available right now. "
-        "Please use your email and password, or try a different provider.",
+        "Please use your email and password instead.",
         "warning",
     )
     return redirect(url_for("auth.login"))
@@ -48,27 +46,6 @@ def _userinfo_from_google(token: dict[str, Any]) -> dict[str, Any]:
     info = token.get("userinfo") or {}
     return {
         "provider_user_id": info.get("sub"),
-        "email": (info.get("email") or "").lower() or None,
-        "name": info.get("name"),
-    }
-
-
-def _userinfo_from_microsoft(token: dict[str, Any]) -> dict[str, Any]:
-    info = token.get("userinfo") or {}
-    # Microsoft sometimes uses preferred_username instead of email.
-    email = info.get("email") or info.get("preferred_username") or ""
-    return {
-        "provider_user_id": info.get("sub"),
-        "email": email.lower() or None,
-        "name": info.get("name"),
-    }
-
-
-def _userinfo_from_facebook(client, token: dict[str, Any]) -> dict[str, Any]:
-    response = client.get("me?fields=id,name,email", token=token)
-    info = response.json() if response is not None else {}
-    return {
-        "provider_user_id": info.get("id"),
         "email": (info.get("email") or "").lower() or None,
         "name": info.get("name"),
     }
@@ -187,10 +164,6 @@ def oauth_callback(provider: str):
 
     if provider == "google":
         info = _userinfo_from_google(token)
-    elif provider == "microsoft":
-        info = _userinfo_from_microsoft(token)
-    elif provider == "facebook":
-        info = _userinfo_from_facebook(client, token)
     else:
         abort(404)
 
