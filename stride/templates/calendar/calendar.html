@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Calendar — {{ month_name }} {{ year }} — Stride{% endblock %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <h1 class="h3 mb-0">{{ month_name }} {{ year }}</h1>
+    <div class="btn-group" role="group" aria-label="Calendar navigation">
+      <a class="btn btn-outline-secondary" href="{{ prev_url }}"
+         aria-label="Previous month">‹</a>
+      <a class="btn btn-outline-secondary" href="{{ today_url }}">Today</a>
+      <a class="btn btn-outline-secondary" href="{{ next_url }}"
+         aria-label="Next month">›</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="table-responsive">
+      <table class="table table-bordered mb-0 calendar-grid">
+        <thead class="table-light">
+          <tr>
+            {% for label in weekday_labels %}
+              <th class="text-center" style="width: 14.28%;">{{ label }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for week in grid %}
+            <tr>
+              {% for day in week %}
+                {% if day is none %}
+                  <td class="bg-light"></td>
+                {% else %}
+                  <td class="align-top
+                             {% if day == today %}table-warning{% endif %}"
+                      style="height: 100px; vertical-align: top;">
+                    <div class="small text-muted mb-1">
+                      {{ day.day }}
+                      {% if day == today %}
+                        <span class="badge bg-warning text-dark ms-1">today</span>
+                      {% endif %}
+                    </div>
+                    {% set day_tasks = tasks_by_date.get(day, []) %}
+                    {% for task in day_tasks %}
+                      <a class="d-block small text-decoration-none mb-1
+                                {% if task.is_done %}text-muted{% endif %}"
+                         style="border-left: 3px solid {{ task.subject.color }};
+                                padding-left: 4px;
+                                white-space: nowrap;
+                                overflow: hidden;
+                                text-overflow: ellipsis;"
+                         href="{{ url_for('tasks.task_detail', task_id=task.id) }}"
+                         title="{{ task.subject.name }} · {{ task.task_type.name }} · {{ task.predicted_minutes }} min">
+                        {% if task.is_done %}<s>{{ task.title }}</s>
+                        {% else %}{{ task.title }}{% endif %}
+                      </a>
+                    {% endfor %}
+                  </td>
+                {% endif %}
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <p class="text-muted small mt-3">
+    Tasks appear on their due date, coloured by subject. Click a task to
+    open its detail.
+  </p>
+{% endblock %}

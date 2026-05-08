@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Log in — Stride{% endblock %}
+
+{% block content %}
+  <div class="row justify-content-center">
+    <div class="col-md-7 col-lg-5">
+      <div class="card shadow-sm">
+        <div class="card-body p-4 p-md-5">
+          <h1 class="card-title h3 mb-4">Log in to Stride</h1>
+
+          {% set verb = "Sign in" %}
+          {% include "auth/_oauth_buttons.html" %}
+
+          <form method="post" novalidate>
+            {{ form.hidden_tag() }}
+
+            <div class="mb-3">
+              {{ form.identifier.label(class="form-label") }}
+              {{ form.identifier(
+                  class="form-control" + (" is-invalid" if form.identifier.errors else ""),
+                  autocomplete="username") }}
+              {% for error in form.identifier.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="mb-3">
+              {{ form.password.label(class="form-label") }}
+              {{ form.password(
+                  class="form-control" + (" is-invalid" if form.password.errors else ""),
+                  autocomplete="current-password") }}
+              {% for error in form.password.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="form-check mb-4">
+              {{ form.remember_me(class="form-check-input") }}
+              {{ form.remember_me.label(class="form-check-label") }}
+            </div>
+
+            {{ form.submit(class="btn btn-primary w-100") }}
+          </form>
+
+          <p class="text-muted small mt-4 mb-0 text-center">
+            New here?
+            <a href="{{ url_for('auth.signup') }}">Create an account</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

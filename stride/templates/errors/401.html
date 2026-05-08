@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Please sign in — Stride{% endblock %}
+
+{% block content %}
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6 text-center">
+      <p class="display-1 text-muted mb-2">401</p>
+      <h1 class="h3 mb-3">You need to sign in first</h1>
+      <p class="text-muted mb-4">
+        That page is only available to signed-in users. Log in or create
+        an account to continue.
+      </p>
+      <a class="btn btn-primary me-2"
+         href="{{ url_for('auth.login') }}">Sign in</a>
+      <a class="btn btn-outline-primary"
+         href="{{ url_for('auth.signup') }}">Create account</a>
+    </div>
+  </div>
+{% endblock %}

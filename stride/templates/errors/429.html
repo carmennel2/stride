@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Too many attempts — Stride{% endblock %}
+
+{% block content %}
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6 text-center">
+      <p class="display-1 text-muted mb-2">429</p>
+      <h1 class="h3 mb-3">Too many attempts</h1>
+      <p class="text-muted mb-4">
+        You've tried that a lot in a short window. Please wait a minute
+        and try again. If you've forgotten your password, send a quick
+        message to whoever administers this server and they can reset it.
+      </p>
+      <a class="btn btn-primary"
+         href="{{ url_for('main.index') }}">Back to home</a>
+    </div>
+  </div>
+{% endblock %}

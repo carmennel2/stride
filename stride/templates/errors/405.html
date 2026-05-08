@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}That doesn't work here — Stride{% endblock %}
+
+{% block content %}
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6 text-center">
+      <p class="display-1 text-muted mb-2">405</p>
+      <h1 class="h3 mb-3">That action isn't allowed on this page</h1>
+      <p class="text-muted mb-4">
+        Some actions in Stride (like signing out) only work as part of
+        a form submission. If you got here from a link, head back home
+        and try again from the right button.
+      </p>
+      <a class="btn btn-primary"
+         href="{{ url_for('main.index') }}">Back to home</a>
+    </div>
+  </div>
+{% endblock %}

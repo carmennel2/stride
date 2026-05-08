@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome — Stride{% endblock %}
+
+{% block content %}
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      <div class="card">
+        <div class="card-body p-4 p-md-5">
+          <h1 class="card-title h3 mb-3">Welcome to Stride</h1>
+          <p class="text-muted">
+            Track your study time, set tasks with deadlines, and let Stride
+            predict how long each task will take you based on your own habits.
+          </p>
+          <p class="text-muted small mb-4">
+            Create an account to start tracking tasks and study sessions.
+          </p>
+          <a class="btn btn-primary me-2" href="{{ url_for('auth.signup') }}">
+            Sign up
+          </a>
+          <a class="btn btn-outline-primary" href="{{ url_for('auth.login') }}">
+            Log in
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

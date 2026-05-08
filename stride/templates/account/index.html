@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}Account settings — Stride{% endblock %}
+
+{% block content %}
+  <h1 class="h3 mb-4">Account settings</h1>
+
+  <div class="row g-4">
+    <div class="col-md-6">
+
+      <div class="card mb-4">
+        <div class="card-body">
+          <h2 class="h6 text-uppercase text-muted mb-3">Profile</h2>
+          <dl class="row mb-0 small">
+            <dt class="col-4">Username</dt>
+            <dd class="col-8">{{ current_user.username }}</dd>
+            <dt class="col-4">Email</dt>
+            <dd class="col-8">{{ current_user.email }}</dd>
+            <dt class="col-4">Member since</dt>
+            <dd class="col-8">{{ current_user.created_at.strftime('%d %b %Y') }}</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="card mb-4">
+        <div class="card-body">
+          <h2 class="h6 text-uppercase text-muted mb-3">
+            {% if current_user.password_hash %}Change password{% else %}Set a password{% endif %}
+          </h2>
+
+          {% if not current_user.password_hash %}
+            <p class="text-muted small mb-3">
+              You signed up with a federated provider, so you don't have
+              a password yet. Setting one lets you sign in directly with
+              your email even if a provider is unavailable.
+            </p>
+          {% endif %}
+
+          <form method="post" action="{{ url_for('account.change_password') }}" novalidate>
+            {{ password_form.hidden_tag() }}
+
+            {% if current_user.password_hash %}
+              <div class="mb-3">
+                {{ password_form.current_password.label(class="form-label") }}
+                {{ password_form.current_password(
+                    class="form-control",
+                    autocomplete="current-password") }}
+              </div>
+            {% endif %}
+
+            <div class="mb-3">
+              {{ password_form.new_password.label(class="form-label") }}
+              {{ password_form.new_password(
+                  class="form-control" + (" is-invalid" if password_form.new_password.errors else ""),
+                  autocomplete="new-password") }}
+              <div class="form-text">
+                More than 8 characters, with an uppercase letter, a
+                lowercase letter, and a special character.
+              </div>
+              {% for error in password_form.new_password.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="mb-3">
+              {{ password_form.confirm_new_password.label(class="form-label") }}
+              {{ password_form.confirm_new_password(
+                  class="form-control" + (" is-invalid" if password_form.confirm_new_password.errors else ""),
+                  autocomplete="new-password") }}
+              {% for error in password_form.confirm_new_password.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            {{ password_form.submit(class="btn btn-primary") }}
+          </form>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="col-md-6">
+
+      <div class="card mb-4">
+        <div class="card-body">
+          <h2 class="h6 text-uppercase text-muted mb-3">Linked accounts</h2>
+
+          {% if identities %}
+            <ul class="list-unstyled mb-3">
+              {% for identity in identities %}
+                <li class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                  <div>
+                    <strong>{{ provider_labels[identity.provider] }}</strong>
+                    {% if identity.email %}
+                      <br><span class="text-muted small">{{ identity.email }}</span>
+                    {% endif %}
+                  </div>
+                  <form method="post"
+                        action="{{ url_for('account.unlink_provider',
+                                           provider=identity.provider) }}"
+                        onsubmit="return confirm('Unlink {{ provider_labels[identity.provider] }} from your account?');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="btn btn-sm btn-outline-secondary">Unlink</button>
+                  </form>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="text-muted small mb-3">
+              No federated accounts linked yet.
+            </p>
+          {% endif %}
+
+          {% set linked = identities | map(attribute='provider') | list %}
+          {% set unlinked = all_providers | reject('in', linked) | list %}
+          {% if unlinked %}
+            <p class="text-muted small mb-2">Add another sign-in method:</p>
+            <div class="d-flex gap-2 flex-wrap">
+              {% for provider in unlinked %}
+                <a class="btn btn-sm btn-outline-secondary"
+                   href="{{ url_for('oauth.oauth_login', provider=provider) }}">
+                  Link {{ provider_labels[provider] }}
+                </a>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="card border-danger">
+        <div class="card-body">
+          <h2 class="h6 text-uppercase text-danger mb-3">Danger zone</h2>
+          <p class="text-muted small mb-3">
+            Deleting your account removes all your subjects, tasks, study
+            sessions, and predictions. This cannot be undone.
+          </p>
+          <form method="post" action="{{ url_for('account.delete_account') }}"
+                onsubmit="return confirm('This will permanently delete your account. Continue?');"
+                novalidate>
+            {{ delete_form.hidden_tag() }}
+            <div class="mb-3">
+              {{ delete_form.confirm.label(class="form-label") }}
+              {% if current_user.password_hash %}
+                <div class="form-text mb-2">
+                  Enter your password to confirm.
+                </div>
+              {% else %}
+                <div class="form-text mb-2">
+                  Type the word <code>delete</code> to confirm.
+                </div>
+              {% endif %}
+              {{ delete_form.confirm(class="form-control",
+                  autocomplete="off") }}
+            </div>
+            {{ delete_form.submit(class="btn btn-outline-danger") }}
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+{% endblock %}

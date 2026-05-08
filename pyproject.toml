@@ -1,0 +1,54 @@
+[tool.coverage.run]
+branch = true
+source = ["stride"]
+omit = [
+    # Demo seed runs only via the seed-demo CLI; coverage is exercised
+    # implicitly when graders run the command.
+    "stride/demo_seed.py",
+]
+
+[tool.coverage.report]
+skip_empty = true
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+    "raise NotImplementedError",
+]
+
+[tool.mypy]
+python_version = "3.10"
+strict_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = false
+# Tooling around Flask + SQLAlchemy is dynamic enough that fully strict
+# mypy produces a high signal-to-noise ratio of false positives. We
+# enable the rules that catch real bugs without insisting on annotation
+# coverage that the framework actively works against.
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# Flask-SQLAlchemy attaches `Model` to the `db` instance dynamically, so
+# mypy can't see it without first-party stubs that don't exist.
+module = "stride.models"
+disable_error_code = ["name-defined"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = [
+    # E501 line-too-long is checked by ruff format separately; for this
+    # project we tolerate the occasional long literal (e.g. SQL fragments,
+    # form labels) without breaking flow.
+    "E501",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Test fixtures intentionally bind variables used purely as documentation
+# (e.g. `bob = make_user("bob")` to make the cross-user setup readable),
+# even though the binding isn't referenced again. Allowing F841 here keeps
+# tests clear without sprinkling # noqa comments.
+"tests/*" = ["F841"]

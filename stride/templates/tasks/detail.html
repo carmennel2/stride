@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+
+{% block title %}{{ task.title }} — Stride{% endblock %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+      <p class="text-muted small mb-1">
+        <a href="{{ url_for('tasks.list_tasks') }}"
+           class="text-muted">← All tasks</a>
+      </p>
+      <h1 class="h3 mb-1">{{ task.title }}</h1>
+      <p class="text-muted mb-0">
+        <span class="d-inline-block rounded-circle me-1"
+              style="width:10px; height:10px;
+                     background-color: {{ task.subject.color }};"></span>
+        {{ task.subject.name }} &middot; {{ task.task_type.name }}
+        &middot; complexity {{ task.complexity }}
+      </p>
+    </div>
+    <div class="d-flex gap-2">
+      <a class="btn btn-outline-secondary"
+         href="{{ url_for('tasks.edit_task', task_id=task.id) }}">Edit</a>
+      <form method="post"
+            action="{{ url_for('tasks.delete_task', task_id=task.id) }}"
+            class="d-inline"
+            onsubmit="return confirm('Delete this task?');">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-outline-danger">Delete</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-md-7">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h2 class="h6 text-uppercase text-muted">Description</h2>
+          {% if task.description %}
+            <p class="mb-0" style="white-space: pre-wrap;">{{ task.description }}</p>
+          {% else %}
+            <p class="text-muted fst-italic mb-0">No description.</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="card shadow-sm mt-4">
+        <div class="card-body">
+          <h2 class="h6 text-uppercase text-muted mb-3">Log a session</h2>
+          <form method="post"
+                action="{{ url_for('sessions.new_session', task_id=task.id) }}">
+            {{ session_form.hidden_tag() }}
+            <div class="row g-3">
+              <div class="col-md-6">
+                {{ session_form.started_at.label(class="form-label") }}
+                {{ session_form.started_at(
+                    class="form-control" + (" is-invalid" if session_form.started_at.errors else ""),
+                    type="datetime-local") }}
+                {% for error in session_form.started_at.errors %}
+                  <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+              </div>
+              <div class="col-md-6">
+                {{ session_form.ended_at.label(class="form-label") }}
+                {{ session_form.ended_at(
+                    class="form-control" + (" is-invalid" if session_form.ended_at.errors else ""),
+                    type="datetime-local") }}
+                {% for error in session_form.ended_at.errors %}
+                  <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+              </div>
+            </div>
+            <div class="mt-3">
+              {{ session_form.note.label(class="form-label") }}
+              {{ session_form.note(
+                  class="form-control",
+                  placeholder="optional — what did you cover?") }}
+            </div>
+            <div class="mt-3">
+              {{ session_form.submit(class="btn btn-primary") }}
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="card shadow-sm mt-4">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h6 text-uppercase text-muted mb-0">Session log</h2>
+            <span class="text-muted small">
+              Total logged: <strong>{{ total_minutes or 0 }}</strong> min
+              {% if task.predicted_minutes %}
+                {% set pct = ((total_minutes or 0) / task.predicted_minutes * 100) | round(0, 'floor') %}
+                ({{ pct }}% of prediction)
+              {% endif %}
+            </span>
+          </div>
+          {% if task.sessions.count() %}
+            <div class="table-responsive">
+              <table class="table table-sm mb-0 align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th>Started</th>
+                    <th>Ended</th>
+                    <th class="text-end">Duration</th>
+                    <th>Note</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for s in task.sessions %}
+                    <tr>
+                      <td>{{ s.started_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                      <td>{{ s.ended_at.strftime('%H:%M') }}</td>
+                      <td class="text-end">{{ s.duration_minutes }} min</td>
+                      <td class="text-muted small">{{ s.note }}</td>
+                      <td class="text-end">
+                        <form method="post"
+                              action="{{ url_for('sessions.delete_session', session_id=s.id) }}"
+                              class="d-inline"
+                              onsubmit="return confirm('Remove this session?');">
+                          <input type="hidden" name="csrf_token"
+                                 value="{{ csrf_token() }}">
+                          <button class="btn btn-sm btn-link text-danger p-0">
+                            remove
+                          </button>
+                        </form>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <p class="text-muted fst-italic mb-0">
+              No sessions logged yet.
+            </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-5">
+      <div class="card shadow-sm mb-3">
+        <div class="card-body">
+          <h2 class="h6 text-uppercase text-muted mb-3">Status</h2>
+          {% set badge = {'pending': 'secondary',
+                          'in_progress': 'primary',
+                          'done': 'success'}[task.status] %}
+          <p>
+            <span class="badge bg-{{ badge }} fs-6">
+              {{ task.status.replace('_', ' ') }}
+            </span>
+          </p>
+          <form method="post"
+                action="{{ url_for('tasks.update_status', task_id=task.id) }}"
+                class="d-flex gap-2 flex-wrap">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            {% if task.status != 'pending' %}
+              <button name="status" value="pending"
+                      class="btn btn-sm btn-outline-secondary">
+                Mark pending
+              </button>
+            {% endif %}
+            {% if task.status != 'in_progress' %}
+              <button name="status" value="in_progress"
+                      class="btn btn-sm btn-outline-primary">
+                Mark in progress
+              </button>
+            {% endif %}
+            {% if task.status != 'done' %}
+              <button name="status" value="done"
+                      class="btn btn-sm btn-success">
+                Mark done
+              </button>
+            {% endif %}
+          </form>
+        </div>
+      </div>
+
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h2 class="h6 text-uppercase text-muted mb-3">Prediction</h2>
+          <div class="row align-items-end mb-2">
+            <div class="col">
+              <p class="text-muted small mb-1">Predicted</p>
+              <p class="display-6 mb-0">{{ task.predicted_minutes }}
+                <span class="fs-6 text-muted">min</span></p>
+            </div>
+            {% if task.is_done and latest_prediction and latest_prediction.actual_minutes %}
+              {% set actual = latest_prediction.actual_minutes %}
+              {% set delta = actual - task.predicted_minutes %}
+              {% set pct = (delta / task.predicted_minutes * 100) | round(0, 'common') if task.predicted_minutes else 0 %}
+              <div class="col text-end">
+                <p class="text-muted small mb-1">Actual</p>
+                <p class="display-6 mb-0">{{ actual }}
+                  <span class="fs-6 text-muted">min</span></p>
+                <p class="small mb-0
+                          {% if delta > 0 %}text-danger{% elif delta < 0 %}text-success{% else %}text-muted{% endif %}">
+                  {{ '+' if delta > 0 else '' }}{{ delta }} min
+                  ({{ '+' if pct > 0 else '' }}{{ pct | int }}%)
+                </p>
+              </div>
+            {% endif %}
+          </div>
+          {% if latest_prediction %}
+            <p class="text-muted small mb-2">
+              <span class="badge bg-light text-dark border">
+                {{ latest_prediction.model_version }}
+              </span>
+              estimated
+              {{ latest_prediction.created_at.strftime('%Y-%m-%d %H:%M') }}
+            </p>
+          {% endif %}
+          <hr>
+          <dl class="row mb-0 small">
+            <dt class="col-5">Due</dt>
+            <dd class="col-7">{{ task.due_date.strftime('%A, %d %b %Y') }}</dd>
+            {% if task.target_words %}
+              <dt class="col-5">Target words</dt>
+              <dd class="col-7">{{ task.target_words }}</dd>
+            {% endif %}
+            {% if task.target_pages %}
+              <dt class="col-5">Target pages</dt>
+              <dd class="col-7">{{ task.target_pages }}</dd>
+            {% endif %}
+            <dt class="col-5">Created</dt>
+            <dd class="col-7">{{ task.created_at.strftime('%Y-%m-%d') }}</dd>
+            {% if task.completed_at %}
+              <dt class="col-5">Completed</dt>
+              <dd class="col-7">{{ task.completed_at.strftime('%Y-%m-%d') }}</dd>
+            {% endif %}
+          </dl>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

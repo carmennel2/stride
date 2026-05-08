@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 # Config picks them up.
 load_dotenv()
 
-from studypilot import create_app  # noqa: E402  (import after load_dotenv)
+from stride import create_app  # noqa: E402  (import after load_dotenv)
 
 app = create_app()
 
