@@ -2,11 +2,7 @@
 
 A personal study-tracking web app that predicts how long your tasks will take, based on a model trained on your own past study sessions.
 
-Built for the ITDS620 *Programming Languages and Software Development* summative assessment.
-
-**Live demo:** https://carmennel.pythonanywhere.com/ (sign in as `demo` / `Demo1234!`)
-
-## Features
+## What it does
 
 - **Tasks**: tag each task with subject, type, and complexity 1–5; add target words / pages where relevant.
 - **Sessions**: log study time against a task; durations are summed into an "actual minutes" figure on completion.
@@ -28,37 +24,6 @@ Built for the ITDS620 *Programming Languages and Software Development* summative
 - Flask-WTF + WTForms (with `email-validator`) for forms and CSRF
 - Bootstrap 5 (CDN) + Chart.js (CDN) for the front end
 - scikit-learn + pandas + numpy for the regression predictor
-
-## Setup
-
-```bash
-# 1. cd into the project
-cd stride
-
-# 2. Create and activate a virtual environment
-python3 -m venv venv
-source venv/bin/activate            # macOS / Linux
-# .\venv\Scripts\activate            # Windows PowerShell
-
-# 3. Install dependencies
-pip install -r requirements.txt
-
-# 4. Configure environment
-cp .env.example .env
-# Edit .env and set SECRET_KEY to a long random string. Generate one with:
-#   python -c "import secrets; print(secrets.token_hex(32))"
-
-# 5. Initialise the database (creates tables and seeds the task type lookup)
-flask --app app.py init-db
-
-# 6. (Optional) Seed a demo user with the project's modules and a populated history
-flask --app app.py seed-demo
-# Logs in as: demo / Demo1234!
-
-# 7. Run the dev server
-flask --app app.py run --debug
-# Open http://127.0.0.1:5000
-```
 
 ## Database schema
 
@@ -158,7 +123,6 @@ stride/
 ├── pytest.ini
 ├── .env.example
 ├── README.md
-├── REPORT.md               written report for the assignment
 ├── instance/               SQLite db + per-user model pickles (gitignored)
 ├── tests/                  pytest suite against in-memory SQLite
 └── stride/
@@ -176,7 +140,7 @@ stride/
     ├── account/            /account — profile + password + linked accounts
     ├── ml/                 predictor.py, features.py, trainer.py
     ├── templates/          base.html + per-blueprint subfolders + errors/
-    └── static/css/style.css
+    └── static/             css/style.css + js/app.js
 ```
 
 ## Tests
@@ -186,5 +150,5 @@ pip install -r requirements-dev.txt
 python -m pytest tests/
 ```
 
-The suite uses an in-memory SQLite database via the `TestConfig`, so each test
-gets a clean schema. Run-time: under 10 seconds.
+The suite uses an in-memory SQLite database via `TestConfig`, so each
+test gets a clean schema. Run-time: under 10 seconds.
